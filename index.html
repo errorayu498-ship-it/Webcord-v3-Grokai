@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEBCORD PORTAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .toast { animation: slideIn 0.3s ease forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body class="bg-black text-yellow-400 min-h-screen">
+
+<!-- LOGIN / REGISTER SCREEN -->
+<div id="auth-screen" class="min-h-screen flex items-center justify-center bg-zinc-950">
+    <div class="bg-zinc-900 border border-yellow-500/30 rounded-3xl p-10 w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 mx-auto bg-yellow-400 rounded-2xl flex items-center justify-center text-black text-4xl font-bold">W</div>
+            <h1 class="text-4xl font-bold mt-4">WEBCORD PORTAL</h1>
+            <p class="text-yellow-400/70">Login ya Register karo</p>
+        </div>
+
+        <div class="flex gap-2 mb-6">
+            <button onclick="showLogin()" id="login-tab" class="flex-1 py-3 bg-yellow-400 text-black font-bold rounded-2xl">LOGIN</button>
+            <button onclick="showRegister()" id="reg-tab" class="flex-1 py-3 bg-zinc-800 font-bold rounded-2xl">REGISTER</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="login-form">
+            <input id="login-email" type="email" placeholder="Email" class="w-full bg-black border border-yellow-500/30 rounded-2xl px-6 py-5 mb-4">
+            <input id="login-pass" type="password" placeholder="Password" class="w-full bg-black border border-yellow-500/30 rounded-2xl px-6 py-5 mb-6">
+            <button onclick="doLogin()" class="w-full bg-yellow-400 text-black font-bold py-5 rounded-2xl">LOGIN</button>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="register-form" class="hidden">
+            <input id="reg-email" type="email" placeholder="Email" class="w-full bg-black border border-yellow-500/30 rounded-2xl px-6 py-5 mb-4">
+            <input id="reg-pass" type="password" placeholder="Password" class="w-full bg-black border border-yellow-500/30 rounded-2xl px-6 py-5 mb-6">
+            <button onclick="doRegister()" class="w-full bg-yellow-400 text-black font-bold py-5 rounded-2xl">CREATE ACCOUNT (100 Credits Free)</button>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN DASHBOARD (hidden initially) -->
+<div id="dashboard" class="hidden min-h-screen">
+    <!-- HEADER -->
+    <header class="bg-zinc-950 border-b border-yellow-500/30 py-5 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-8 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="text-3xl font-bold">WEBCORD</div>
+                <div id="user-email" class="text-yellow-400/70 text-sm"></div>
+            </div>
+            <div class="flex items-center gap-8 text-sm font-medium">
+                <button onclick="switchTab(0)" class="tab-btn active">HOME</button>
+                <button onclick="switchTab(1)" class="tab-btn">TOOLS</button>
+                <button onclick="switchTab(2)" class="tab-btn">CREDITS</button>
+                <button onclick="switchTab(3)" id="admin-tab" class="tab-btn hidden">ADMIN</button>
+                <button onclick="logout()" class="text-red-400">LOGOUT</button>
+            </div>
+            <div class="flex items-center gap-3 bg-zinc-900 px-6 py-3 rounded-3xl">
+                <i class="fas fa-coins text-yellow-400"></i>
+                <span id="credits-display" class="font-bold text-xl">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- HOME TAB (AFK Earning) -->
+    <div id="tab-0" class="tab-content max-w-7xl mx-auto px-8 py-12">
+        <div class="text-center">
+            <h2 class="text-5xl font-bold mb-4">Stay AFK • Earn Credits</h2>
+            <p class="text-yellow-400/70 text-2xl mb-10">Har 1 minute = <span class="text-green-400 font-bold">+2 Credits</span></p>
+            <div id="afk-status" class="inline-flex items-center gap-4 bg-zinc-900 px-10 py-5 rounded-3xl text-xl">
+                <i class="fas fa-clock animate-spin"></i>
+                <span>AFK Mode Active • Next credit in 60s</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOLS TAB -->
+    <div id="tab-1" class="tab-content hidden max-w-7xl mx-auto px-8 py-12">
+        <!-- Same as previous Webhook + Bot/User cards but now with credit check -->
+        <div class="grid grid-cols-2 gap-8">
+            <!-- Webhook Card -->
+            <div onclick="openTool(0)" class="bg-zinc-900 border border-yellow-500/30 rounded-3xl p-8 cursor-pointer">
+                <h3 class="text-3xl font-bold">Webhook Sender</h3>
+                <button onclick="event.stopImmediatePropagation(); openTool(0)" class="mt-6 bg-yellow-400 text-black px-8 py-4 rounded-2xl">OPEN TOOL</button>
+            </div>
+            <!-- Bot/User Card -->
+            <div onclick="openTool(1)" class="bg-zinc-900 border border-yellow-500/30 rounded-3xl p-8 cursor-pointer">
+                <h3 class="text-3xl font-bold">Bot / User Sender</h3>
+                <button onclick="event.stopImmediatePropagation(); openTool(1)" class="mt-6 bg-yellow-400 text-black px-8 py-4 rounded-2xl">OPEN TOOL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREDITS TAB -->
+    <div id="tab-2" class="tab-content hidden max-w-7xl mx-auto px-8 py-12 text-center">
+        <h2 class="text-4xl font-bold mb-6">Your Credits</h2>
+        <div id="big-credits" class="text-8xl font-bold text-yellow-400">0</div>
+        <p class="text-yellow-400/70 mt-4">Use 90 credits to start any tool</p>
+    </div>
+
+    <!-- ADMIN TAB -->
+    <div id="tab-3" class="tab-content hidden max-w-7xl mx-auto px-8 py-12">
+        <h2 class="text-4xl font-bold mb-8">Admin Panel</h2>
+        <div class="bg-zinc-900 rounded-3xl p-8">
+            <table class="w-full" id="users-table">
+                <!-- JS se fill hoga -->
+            </table>
+            <div class="mt-8 flex gap-4">
+                <input id="admin-userid" placeholder="User ID" class="flex-1 bg-black border border-yellow-500/30 rounded-2xl px-6 py-4">
+                <input id="admin-amount" placeholder="Credits" type="number" class="flex-1 bg-black border border-yellow-500/30 rounded-2xl px-6 py-4">
+                <button onclick="giveCreditsAdmin()" class="bg-green-400 text-black px-10 py-4 rounded-2xl font-bold">GIVE CREDITS</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container" class="fixed bottom-8 right-8 z-[9999] flex flex-col gap-3"></div>
+
+<script>
+// =============== GLOBAL VARS ===============
+let currentToken = null;
+let currentUser = null;
+let afkInterval = null;
+
+// =============== AUTH FUNCTIONS ===============
+function showLogin() {
+    document.getElementById("login-form").classList.remove("hidden");
+    document.getElementById("register-form").classList.add("hidden");
+    document.getElementById("login-tab").classList.add("bg-yellow-400","text-black");
+    document.getElementById("reg-tab").classList.remove("bg-yellow-400","text-black");
+}
+function showRegister() {
+    document.getElementById("login-form").classList.add("hidden");
+    document.getElementById("register-form").classList.remove("hidden");
+    document.getElementById("reg-tab").classList.add("bg-yellow-400","text-black");
+    document.getElementById("login-tab").classList.remove("bg-yellow-400","text-black");
+}
+
+async function doRegister() {
+    const email = document.getElementById("reg-email").value.trim();
+    const pass = document.getElementById("reg-pass").value.trim();
+    if (!email || !pass) return showToast("Email aur password daalo", "error");
+
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, password: pass})
+        });
+        const data = await res.json();
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            currentToken = data.token;
+            showToast("Account created! 100 credits free 🔥", "success");
+            loadDashboard();
+        } else {
+            showToast(data.error || "Error", "error");
+        }
+    } catch(e) { showToast("Network error", "error"); }
+}
+
+async function doLogin() {
+    const email = document.getElementById("login-email").value.trim();
+    const pass = document.getElementById("login-pass").value.trim();
+    if (!email || !pass) return showToast("Email aur password daalo", "error");
+
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, password: pass})
+        });
+        const data = await res.json();
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            currentToken = data.token;
+            showToast("Login successful!", "success");
+            loadDashboard();
+        } else {
+            showToast(data.error || "Invalid credentials", "error");
+        }
+    } catch(e) { showToast("Network error", "error"); }
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    location.reload();
+}
+
+// =============== DASHBOARD ===============
+async function loadDashboard() {
+    currentToken = localStorage.getItem('token');
+    if (!currentToken) return;
+
+    try {
+        const res = await fetch('/api/user/me', {
+            headers: { 'Authorization': 'Bearer ' + currentToken }
+        });
+        const data = await res.json();
+        if (data.credits !== undefined) {
+            currentUser = data;
+            document.getElementById("auth-screen").classList.add("hidden");
+            document.getElementById("dashboard").classList.remove("hidden");
+            document.getElementById("user-email").innerText = currentUser.email;
+            updateCreditsDisplay(data.credits);
+
+            // Admin tab show
+            if (currentUser.isAdmin) document.getElementById("admin-tab").classList.remove("hidden");
+
+            // Start AFK earning
+            startAFKEarning();
+            switchTab(0);
+        }
+    } catch(e) {
+        logout();
+    }
+}
+
+function updateCreditsDisplay(credits) {
+    document.getElementById("credits-display").innerText = credits;
+    document.getElementById("big-credits").innerText = credits;
+}
+
+function startAFKEarning() {
+    if (afkInterval) clearInterval(afkInterval);
+    afkInterval = setInterval(async () => {
+        try {
+            const res = await fetch('/api/earn-credit', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + currentToken }
+            });
+            const data = await res.json();
+            if (data.credits) {
+                currentUser.credits = data.credits;
+                updateCreditsDisplay(data.credits);
+                showToast(data.message, "success");
+            }
+        } catch(e) {}
+    }, 60000); // 1 minute
+}
+
+// =============== TAB SWITCH ===============
+function switchTab(n) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById('tab-'+n).classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+}
+
+// =============== TOOLS ===============
+async function openTool(tool) {
+    const credits = currentUser.credits;
+    if (credits < 90) {
+        return showToast("90 credits chahiye tool use karne ke liye!", "error");
+    }
+    // Tool open (same previous logic but now protected)
+    showToast("Tool opening... 90 credits will be deducted on START", "info");
+    // You can open previous webhook/bot modals here or keep same pages
+    // For simplicity we assume tool logic same as before but now backend will deduct
+}
+
+// =============== ADMIN ===============
+async function loadAdminUsers() {
+    const res = await fetch('/api/admin/users', {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+    });
+    const users = await res.json();
+    let html = `<tr class="border-b"><th class="text-left py-4">ID</th><th>Email</th><th>Credits</th><th>Action</th></tr>`;
+    users.forEach(u => {
+        html += `<tr class="border-b"><td>\( {u.id}</td><td> \){u.email}</td><td>${u.credits}</td><td></td></tr>`;
+    });
+    document.getElementById("users-table").innerHTML = html;
+}
+
+async function giveCreditsAdmin() {
+    const userId = document.getElementById("admin-userid").value;
+    const amount = document.getElementById("admin-amount").value;
+    if (!userId || !amount) return showToast("User ID aur amount daalo", "error");
+
+    const res = await fetch('/api/admin/give-credits', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + currentToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({userId, amount})
+    });
+    const data = await res.json();
+    showToast(data.message, "success");
+    loadAdminUsers();
+}
+
+// =============== TOAST ===============
+function showToast(msg, type="success") {
+    const c = document.getElementById("toast-container");
+    const t = document.createElement("div");
+    t.className = `toast flex items-center gap-4 bg-zinc-900 border-l-4 px-6 py-4 rounded-2xl shadow-2xl`;
+    if (type==="success") t.classList.add("border-green-400");
+    else if (type==="error") t.classList.add("border-red-400");
+    t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-triangle'} text-2xl \( {type==='success'?'text-green-400':'text-red-400'}"></i><div> \){msg}</div>`;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+}
+
+// =============== INIT ===============
+window.onload = () => {
+    tailwind.config = { content: [] };
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) loadDashboard();
+    else showLogin();
+};
+</script>
+</body>
+</html>
